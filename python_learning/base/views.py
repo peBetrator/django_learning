@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
-from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.db.models import Q
+from django.shortcuts import redirect, render
 
-from .models import Room, Topic
 from .forms import RoomForm
+from .models import Room, Topic
 
 
 def login_user(request):
@@ -11,13 +13,26 @@ def login_user(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-    try:
-        user = User.objects.get(username=username)
-    except:
-        pass
+        try:
+            user = User.objects.get(username=username)
+        except:
+            messages.error(request, "User does not exist")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("home")
+        else:
+            messages.error(request, "Invalid credentials")
 
     context = {}
     return render(request, "login_register.html", context)
+
+
+def logout_user(request):
+    logout(request)
+    return redirect("home")
 
 
 def home(request):

@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -5,12 +6,15 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.contrib.auth.forms import UserCreationForm
 
 from .forms import RoomForm
 from .models import Room, Topic
 
 
 def login_user(request):
+    page = "login"
+
     if request.user.is_authenticated:
         return redirect("home")
 
@@ -31,13 +35,31 @@ def login_user(request):
         else:
             messages.error(request, "Invalid credentials")
 
-    context = {}
+    context = {"page": page}
     return render(request, "login_register.html", context)
 
 
 def logout_user(request):
     logout(request)
     return redirect("home")
+
+
+def register_user(request):
+    page = "register"
+    form = UserCreationForm()
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+
+            return redirect("home")
+        else:
+            messages.error(request, "An error occured during registration")
+
+    context = {"page": page, "form": form}
+    return render(request, "login_register.html", context)
 
 
 def home(request):

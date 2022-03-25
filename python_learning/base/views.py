@@ -148,6 +148,22 @@ def delete_message(request, pk):
 
     if request.method == "POST":
         message.delete()
-        return redirect("home")
+        return redirect("room", pk=message.room.id)
 
     return render(request, "delete.html", {"obj": message})
+
+
+@login_required(login_url="login")
+def edit_message(request, pk):
+    message = Message.objects.get(id=pk)
+
+    if request.user != message.user:
+        return HttpResponse("You don`t have required permissions")
+
+    if request.method == "POST":
+        updated_message = request.POST.get("message")
+        message.body = updated_message
+        message.save()
+        return redirect("room", pk=message.room.id)
+
+    return render(request, "edit_message.html", {"obj": message})

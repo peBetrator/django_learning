@@ -20,6 +20,7 @@
       <div>
         {% if request.user == message.user %}
         <button><a href="{% url 'delete_message' message.id %}">Delete</a></button>
+        <button><a href="{% url 'edit_message' message.id %}">Edit</a></button>
         {% endif %}
         <small>@{{message.user}} {{message.created|timesince}} ago</small>
         <div>{{message.body}}</div>
